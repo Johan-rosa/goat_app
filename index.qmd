@@ -7,6 +7,8 @@ execute:
 ---
 
 ```{r setup}
+Sys.setlocale("LC_TIME", "Spanish")
+
 library(dplyr)
 library(tidyr)
 library(stringr)
@@ -15,7 +17,7 @@ library(reactable)
 ```
 
 ```{css}
-@media only screen and (max-width: 600px) {
+@media only screen and (max-width: 800px) {
   body {
     font-size: 14px;
   }
@@ -126,5 +128,4 @@ aportes_table |>
   )
 ```
 
-:::
 
