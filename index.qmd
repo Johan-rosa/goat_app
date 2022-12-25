@@ -7,8 +7,6 @@ execute:
 ---
 
 ```{r setup}
-Sys.setlocale("LC_TIME", "Spanish")
-
 library(dplyr)
 library(tidyr)
 library(stringr)
