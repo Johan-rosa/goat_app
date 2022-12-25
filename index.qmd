@@ -104,6 +104,7 @@ cell_width <- 120
 row_bg <- "#e7edf3"
 
 aportes_table |>
+  dplyr::arrange(desc(total)) |> 
   setNames(str_to_sentence(names(aportes_table))) |> 
   reactable(
     height = 600,
