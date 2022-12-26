@@ -1,0 +1,137 @@
+---
+format:
+  html:
+    page-layout: custom
+execute:
+  echo: false
+  warning: false
+  messages: false
+---
+
+```{r setup}
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(readxl)
+library(reactable)
+```
+
+```{css}
+@media only screen and (max-width: 800px) {
+  body {
+    font-size: 14px;
+    padding: 5px;
+  }
+  h2{
+  margin-top: 20px;
+  font-size: 18px;
+}
+}
+
+h2{
+ border-bottom: none;
+}
+
+.aportes-table {
+  margin-top: 1rem;
+  border: none;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  background-color: hsl(213, 45%, 97%);
+  border-bottom-color: hsl(213, 33%, 93%);
+  border-bottom-width: 1px;
+  border-top: 1px solid hsl(213, 33%, 93%);
+  color: hsl(213, 13%, 33%);
+}
+
+.rt-tbody{
+border: 1px solid hsl(213, 33%, 93%);
+}
+
+.header[aria-sort]:hover,
+.header[aria-sort]:focus {
+  color: hsl(213, 55%, 50%);
+}
+
+```
+
+
+```{r importing_data}
+aportes <- read_excel("../fondo/aportes.xlsx", sheet = "Ingreso") |>
+  janitor::clean_names() |>
+  mutate(
+    fecha = as.Date(fecha),
+    label_fecha = factor(format(fecha, "%d %b %Y", locale = "spanish")),
+    label_fecha = forcats::fct_reorder(label_fecha, fecha),
+    month = factor(format(fecha, "%b %Y", locale = "spanish")),
+    month = forcats::fct_reorder(label_fecha, fecha)
+    )
+
+gastos <- read_excel("../fondo/aportes.xlsx", sheet = "Gastos") |>
+  janitor::clean_names() |>
+  mutate(
+    fecha = as.Date(fecha),
+    label_fecha = factor(format(fecha, "%b %Y", locale = "spanish")),
+    label_fecha = forcats::fct_reorder(label_fecha, fecha)
+  )
+```
+
+
+```{r aportes_table}
+dates_order <- aportes |>
+  distinct(label_fecha) |>
+  pull(label_fecha) %>%
+  as.character() %>%
+  c("miembro", "total", .)
+
+aportes_table <- aportes |>
+  group_by(miembro, label_fecha) |>
+  summarise(aporte = sum(aporte)) |> 
+  pivot_wider(names_from = label_fecha, values_from = aporte, values_fill = 0) |>
+  rowwise() |>
+  mutate(total = sum(c_across(where(is.numeric)))) |>
+  select(all_of(dates_order))
+```
+
+## Tabla de aportes al `r format(max(aportes$fecha), "%d de %B %Y", locale = "spanish")` {.column-page .px-md-5}
+
+::: {d-flex}
+<span class="badge bg-success">Ingreso `r format(sum(aportes$aporte), big.mark = ",")`</span> -
+<span class="badge bg-danger">Gasto `r format(sum(gastos$monto), big.mark = ",")`</span> =
+<span class="badge bg-primary">Balance `r format(sum(aportes$aporte) - sum(gastos$monto), big.mark = ",")`</span>
+:::
+
+
+```{r}
+member_width <- 85
+cell_width <- 120
+row_bg <- "#e7edf3"
+
+aportes_table |>
+  dplyr::arrange(desc(total)) |> 
+  setNames(str_to_sentence(names(aportes_table))) |> 
+  reactable(
+    height = 600,
+    pagination = FALSE,
+    searchable = TRUE,
+    defaultColDef = colDef(width = cell_width, headerClass = "header"),
+    columns = list(
+      Total = colDef(
+        format = colFormat(separators = TRUE),
+        style = list(position = "sticky", left = member_width, background = "#fff", zIndex = 1),
+        headerStyle = list(position = "sticky", left = member_width, background = row_bg, zIndex = 1)
+        ),
+      Miembro = colDef(
+        width = member_width,
+        style = list(position = "sticky", left = 0, background = "#fff", zIndex = 1),
+        headerStyle = list(position = "sticky", left = 0, background = row_bg, zIndex = 1)
+      )
+    ),
+    class = "aportes-table"
+  )
+```
+
+
