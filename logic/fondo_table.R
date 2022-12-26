@@ -54,7 +54,7 @@ aportes_table_2 <- aportes %>%
     data = map(data, ~.x[,c("fecha", "aporte")] %>% arrange(desc(fecha)))
     ) %>%
   select(miembro, cantidad_aportes, total, data) %>% 
-  arrange(desc(cantidad_aportes))
+  arrange(desc(total)) 
 
 # html table --------------------------------------------------------------
 
