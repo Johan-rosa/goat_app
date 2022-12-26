@@ -14,6 +14,8 @@ library(tidyr)
 library(stringr)
 library(readxl)
 library(reactable)
+
+source("logic/fondo_table.R", echo = FALSE, verbose = FALSE)
 ```
 
 ```{css}
@@ -24,7 +26,7 @@ library(reactable)
   }
   h2{
   margin-top: 20px;
-  font-size: 18px;
+  font-size: 16px;
 }
 }
 
@@ -37,6 +39,7 @@ h2{
   border: none;
   border-radius: 4px;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
+  height: 70vh;
 }
 
 .header {
@@ -59,44 +62,7 @@ border: 1px solid hsl(213, 33%, 93%);
 ```
 
 
-```{r importing_data}
-aportes <- read_excel("../fondo/aportes.xlsx", sheet = "Ingreso") |>
-  janitor::clean_names() |>
-  mutate(
-    fecha = as.Date(fecha),
-    label_fecha = factor(format(fecha, "%d %b %Y", locale = "spanish")),
-    label_fecha = forcats::fct_reorder(label_fecha, fecha),
-    month = factor(format(fecha, "%b %Y", locale = "spanish")),
-    month = forcats::fct_reorder(label_fecha, fecha)
-    )
-
-gastos <- read_excel("../fondo/aportes.xlsx", sheet = "Gastos") |>
-  janitor::clean_names() |>
-  mutate(
-    fecha = as.Date(fecha),
-    label_fecha = factor(format(fecha, "%b %Y", locale = "spanish")),
-    label_fecha = forcats::fct_reorder(label_fecha, fecha)
-  )
-```
-
-
-```{r aportes_table}
-dates_order <- aportes |>
-  distinct(label_fecha) |>
-  pull(label_fecha) %>%
-  as.character() %>%
-  c("miembro", "total", .)
-
-aportes_table <- aportes |>
-  group_by(miembro, label_fecha) |>
-  summarise(aporte = sum(aporte)) |> 
-  pivot_wider(names_from = label_fecha, values_from = aporte, values_fill = 0) |>
-  rowwise() |>
-  mutate(total = sum(c_across(where(is.numeric)))) |>
-  select(all_of(dates_order))
-```
-
-## Tabla de aportes al `r format(max(aportes$fecha), "%d de %B %Y", locale = "spanish")` {.column-page .px-md-5}
+## Tabla de aportes al `r format(max(aportes$fecha), "%d de %B del %Y", locale = "spanish")` {.px-md-5 .d-flex .flex-column .align-items-center}
 
 ::: {d-flex}
 <span class="badge bg-success">Ingreso `r format(sum(aportes$aporte), big.mark = ",")`</span> -
@@ -106,32 +72,7 @@ aportes_table <- aportes |>
 
 
 ```{r}
-member_width <- 85
-cell_width <- 120
-row_bg <- "#e7edf3"
-
-aportes_table |>
-  dplyr::arrange(desc(total)) |> 
-  setNames(str_to_sentence(names(aportes_table))) |> 
-  reactable(
-    height = 600,
-    pagination = FALSE,
-    searchable = TRUE,
-    defaultColDef = colDef(width = cell_width, headerClass = "header"),
-    columns = list(
-      Total = colDef(
-        format = colFormat(separators = TRUE),
-        style = list(position = "sticky", left = member_width, background = "#fff", zIndex = 1),
-        headerStyle = list(position = "sticky", left = member_width, background = row_bg, zIndex = 1)
-        ),
-      Miembro = colDef(
-        width = member_width,
-        style = list(position = "sticky", left = 0, background = "#fff", zIndex = 1),
-        headerStyle = list(position = "sticky", left = 0, background = row_bg, zIndex = 1)
-      )
-    ),
-    class = "aportes-table"
-  )
+tabla_aportes
 ```
 
 
