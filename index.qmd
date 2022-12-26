@@ -1,5 +1,7 @@
 ---
-format: html
+format:
+  html:
+    page-layout: custom
 execute:
   echo: false
   warning: false
@@ -18,11 +20,16 @@ library(reactable)
 @media only screen and (max-width: 800px) {
   body {
     font-size: 14px;
+    padding: 5px;
   }
   h2{
   margin-top: 20px;
   font-size: 18px;
 }
+}
+
+h2{
+ border-bottom: none;
 }
 
 .aportes-table {
@@ -89,7 +96,7 @@ aportes_table <- aportes |>
   select(all_of(dates_order))
 ```
 
-## Tabla de aportes al `r format(max(aportes$fecha), "%d de %B %Y", locale = "spanish")` {.column-page}
+## Tabla de aportes al `r format(max(aportes$fecha), "%d de %B %Y", locale = "spanish")` {.column-page .px-md-5}
 
 ::: {d-flex}
 <span class="badge bg-success">Ingreso `r format(sum(aportes$aporte), big.mark = ",")`</span> -
