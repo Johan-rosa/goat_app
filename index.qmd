@@ -70,9 +70,25 @@ border: 1px solid hsl(213, 33%, 93%);
 <span class="badge bg-primary">Balance `r format(sum(aportes$aporte) - sum(gastos$monto), big.mark = ",")`</span>
 :::
 
+::: { .panel-tabset }
 
+### Ingreso
 ```{r}
 tabla_aportes
 ```
 
+### Gastos
 
+```{r}
+tabla_gastos
+```
+
+
+### Multas a cobrar
+
+```{r}
+tabla_multas
+```
+
+
+:::

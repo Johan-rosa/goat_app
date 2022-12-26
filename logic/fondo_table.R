@@ -30,6 +30,10 @@ gastos <- read_excel("./data/aportes.xlsx", sheet = "Gastos") |>
     label_fecha = forcats::fct_reorder(label_fecha, fecha)
   )
 
+multas <- read_excel("./data/aportes.xlsx", sheet = "Cuentas por cobrar") |>
+  mutate(Fecha = as.Date(Fecha)) |>
+  select(Fecha, Deudor, Concepto, Monto)
+
 dates_order <- aportes |>
   distinct(label_fecha) |>
   pull(label_fecha) %>%
@@ -80,29 +84,22 @@ tabla_aportes <- aportes_table_2 %>%
     class = "aportes-table"
   )
 
-# Table 1
-tabla_aportes1 <- aportes_table |>
-  setNames(str_to_sentence(names(aportes_table))) |> 
+tabla_gastos <- gastos |>
+  arrange(fecha) |> 
+  select(fecha, item, monto) |> 
+  setNames(c("Fecha", "Concepto", "Monto")) |>
   reactable(
-    defaultColDef = colDef(width = 110),
+    class = "aportes-table",
+    defaultColDef = colDef(headerClass = "header"),
     columns = list(
-      Total = colDef(
-        format = colFormat(separators = TRUE),
-        style = list(position = "sticky", left = 90, background = "#fff", zIndex = 1),
-        headerStyle = list(position = "sticky", left = 90, background = "#fff", zIndex = 1)
-        ),
-      Miembro = colDef(
-        width = 90,
-        style = list(position = "sticky", left = 0, background = "#fff", zIndex = 1),
-        headerStyle = list(position = "sticky", left = 0, background = "#fff", zIndex = 1)
-      )
+      Concepto = colDef(minWidth = 150),
+      Monto = colDef(format = colFormat(separators = TRUE))
     )
   )
 
-
-
-
-
-
-
-
+tabla_multas <- multas |>
+  reactable(
+    class = "aportes-table",
+    defaultColDef = colDef(headerClass = "header", width = 90),
+    columns = list(Fecha = colDef(width = 100))
+  )
